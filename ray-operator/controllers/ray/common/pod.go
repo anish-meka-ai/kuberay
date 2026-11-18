@@ -37,6 +37,8 @@ const (
 	NeuronCoreRayResourceName          = "neuron_cores"
 	TPUContainerResourceName           = "google.com/tpu"
 	TPURayResourceName                 = "TPU"
+	lilypadWorkloadClassLabelKey       = "group_workload_class"
+	lilypadWorkloadClassLabelValue     = "lilypad"
 )
 
 var customAcceleratorToRayResourceMap = map[string]string{
@@ -302,6 +304,9 @@ func DefaultWorkerPodTemplate(ctx context.Context, instance rayv1.RayCluster, wo
 					corev1.ResourceMemory: resource.MustParse("512Mi"),
 				},
 			},
+		}
+		if podTemplate.Labels[lilypadWorkloadClassLabelKey] == lilypadWorkloadClassLabelValue {
+			initContainer.Args = []string{dashboardGCSReadinessCommand(fqdnRayIP)}
 		}
 		podTemplate.Spec.InitContainers = append(podTemplate.Spec.InitContainers, initContainer)
 	}
